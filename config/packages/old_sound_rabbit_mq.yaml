@@ -1,0 +1,41 @@
+old_sound_rabbit_mq:
+    connections:
+        default:
+            host:     '%env(resolve:RABBITMQ_HOST)%'
+            port:     '%env(resolve:RABBITMQ_PORT)%'
+            user:     '%env(resolve:RABBITMQ_LOGIN)%'
+            password: '%env(resolve:RABBITMQ_PASSWORD)%'
+
+    consumers:
+        mindbox_export_products:
+            connection: default
+            exchange_options: { name: 'products_catalog', type: topic }
+            queue_options: {
+                name: '%env(APP_NAME)%',
+                routing_keys: [ !php/const \CdekMarket\MessageBus\Messages\ProductUpdatedMessage::ROUTING_KEY ]
+            }
+            callback: App\Consumer\ProductConsumer
+        user_registered:
+            connection: default
+            exchange_options: { name: 'users', type: direct }
+            queue_options: {
+                name: '%env(APP_NAME)%',
+                routing_keys: [ !php/const \CdekMarket\MessageBus\Messages\UserRegistratedMessage::ROUTING_KEY ]
+            }
+            callback: App\Consumer\UserRegisteredConsumer
+        user_updated:
+            connection: default
+            exchange_options: { name: 'users', type: direct }
+            queue_options: {
+                name: '%env(APP_NAME)%',
+                routing_keys: [ !php/const \CdekMarket\MessageBus\Messages\UserUpdatedMessage::ROUTING_KEY ]
+            }
+            callback: App\Consumer\UserUpdatedConsumer
+        user_logged:
+            connection: default
+            exchange_options: { name: 'users', type: direct }
+            queue_options: {
+                name: '%env(APP_NAME)%',
+                routing_keys: [ !php/const \CdekMarket\MessageBus\Messages\UserLoggedInMessage::ROUTING_KEY ]
+            }
+            callback: App\Consumer\UserLoggedConsumer

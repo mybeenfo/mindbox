@@ -1,0 +1,19 @@
+monolog:
+    handlers:
+        main:
+            type: fingers_crossed
+            action_level: info
+            handler: logstash_filter
+            channels: [ "!event", "!doctrine", "!request", "!deprecation" ]
+        console:
+            type: console
+            process_psr_3_messages: false
+            channels: [ "!event", "!doctrine", "!console", "!deprecation" ]
+        logstash_filter:
+            type: filter
+            handler: logstash
+            min_level: info
+        logstash:
+            type: socket
+            connection_string: "tcp://%env(resolve:LOGSTASH_HOST)%:%env(resolve:LOGSTASH_PORT)%"
+            formatter: CdekMarket\Logs\Logstash\Formatter

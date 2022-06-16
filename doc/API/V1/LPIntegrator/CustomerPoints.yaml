@@ -1,0 +1,308 @@
+openapi: 3.0.3
+info:
+  title: Swagger API.LPIntegrator Customer points
+  version: 1.0.0
+servers:
+  - url: 'https:mindbox.dev.market'
+    description: Test Server
+  - url: 'https:mindbox.dev.market'
+    description: Master Server
+paths:
+  /api/v1/customer/points/balance:
+    description: API.LPIntegrator.Balance - Баланс бонусного счёта
+    get:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-USER-ID
+          schema:
+            type: integer
+          required: true
+          example: 11
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      responses:
+        200:
+          description: Запрос баланса OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceOkResponse'
+        400:
+          description: 'Покупатель не найден'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/CustomerNotFoundResponse'
+        500:
+          description: 'gateway timeout'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/customer/points/history/search:
+    description: API.LPIntegrator.HistorySearch - История изменений баланса бонусного счета
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-USER-ID
+          schema:
+            type: integer
+          required: true
+          example: 11
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HistorySearchPayload'
+      responses:
+        200:
+          description: History search OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistorySearchOkResponse'
+        400:
+          description: 'Покупатель не найден'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/CustomerNotFoundResponse'
+        500:
+          description: 'gateway timeout'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/customer/points/forecast/search:
+    description: API.LPIntegrator.ForecastSearch - График сгорания накопленных бонусов
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-USER-ID
+          schema:
+            type: integer
+          required: true
+          example: 11
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForecastSearch'
+      responses:
+        200:
+          description: Forecast search OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForecastSearchOkResponse'
+        400:
+          description: 'Покупатель не найден'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/CustomerNotFoundResponse'
+        500:
+          description: 'gateway timeout'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+components:
+  schemas:
+    BalanceOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Корректный статус
+          example:
+            status: 'Success'
+        result:
+          type: object
+          required: true
+          description: Результат запроса
+          properties:
+            availablePoints:
+              type: integer
+              required: true
+              example: 100
+              description: Сумма баллов, доступная к трате
+            blockedPoints:
+              type: integer
+              required: true
+              example: 0
+              description: Сумма баллов, недоступная к трате. Баллы блокируются на время процесса оплаты с частичным покрытием баллами.
+
+    HistorySearchPayload:
+      type: object
+      properties:
+        timestampFrom:
+          type: string
+          required: true
+          example: '2017-08-22T10:00:00.000Z'
+          description: Дата и время начала интервала (включительно)
+        timestampTo:
+          type: string
+          required: true
+          example: '2022-08-22T11:00:00.000Z'
+          description: Дата и время завершения интервала (не включительно). Правая граница должна быть как минимум на пять минут меньше текущего времени.
+        pageNumber:
+          type: integer
+          required: true
+          example: 1
+          description: Номер страницы начиная с 1, не более 21474831
+        itemsPerPage:
+          type: integer
+          required: true
+          example: 10
+          description: Количество элементов на странице не более 1000
+    HistorySearchOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Корректный статус
+          example:
+            status: 'Success'
+        result:
+          type: object
+          required: true
+          description: Результат запроса
+          properties:
+            changes:
+              type: object
+              description: Массив изменений баланса
+              properties:
+                type:
+                  type: string
+                  example: 'EXPIRED_POINTS'
+                  description: Тип изменения баланса
+                    ORDER_EARNED_POINTS - Начисление за заказ
+                    ORDER_PAYED_POINTS - Оплата заказа баллами
+                    OTHER - Прочее
+                    EXPIRED_POINTS - Списание сгоревших баллов
+                amount:
+                  type: integer
+                  example: -100
+                  description: Сумма, на которую изменился баланс
+                orderNumber:
+                  type: integer
+                  example: 132456789
+                  description: Номер заказа, в соответствии с которым изменился баланс.
+                timestamp:
+                  type: string
+                  example: '2021-12-08T10:35:10.590Z'
+                  description: Дата и время изменения баланса
+                expirationTimestamp:
+                  type: string
+                  example: '2021-12-22T10:35:10.590Z'
+                  description: Дата и время сгорания бонусов. Только для начислений на баланс
+            totalCount:
+              type: integer
+              example: 2
+              description: Общее количество записей об изменении баланса
+
+    ForecastSearch:
+      type: object
+      properties:
+        timestampFrom:
+          type: string
+          required: false
+          example: '2017-08-22T10:00:00.000Z'
+          description: Дата и время начала интервала. Если данное поле не заполнено, то интегратор проставит текущую дату.
+        timestampTo:
+          type: string
+          required: false
+          example: '2022-08-22T11:00:00.000Z'
+          description: Дата и время завершения интервала. Если данное поле не заполнено, то интегратор проставит текущая дата + 2 месяца.
+        pageNumber:
+          type: integer
+          required: true
+          example: 1
+          description: Номер страницы начиная с 1, не более 21474831
+        itemsPerPage:
+          type: integer
+          required: true
+          example: 10
+          description: Количество элементов на странице не более 1000
+    ForecastSearchOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Корректный статус
+          example:
+            status: 'Success'
+        result:
+          type: object
+          required: true
+          description: Результат запроса
+          properties:
+            changes:
+              type: array
+              required: true
+              description: Массив изменений баланса
+              items:
+                properties:
+                  type:
+                    type: string
+                    required: true
+                    description: Тип изменения баланса - EXPIRED_POINTS. В будущем могут добавиться новые типы.
+                  amount:
+                    type: integer
+                    required: true
+                    description: Сумма, на которую изменится баланс
+                  timestamp:
+                    type: string
+                    required: true
+                    description: Дата и время прогнозируемого изменения баланса
+            totalAmount:
+              type: integer
+              required: true
+              description: Сумма запланированного сгорания
+            totalCount:
+              type: integer
+              required: true
+              description: Общее количество записей об изменении баланса

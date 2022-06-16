@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Swagger Response errors
+  version: 1.0.0
+paths:
+
+components:
+  schemas:
+    CustomerNotFoundResponse:
+      type: object
+      description: 'Покупатель не найден'
+      properties:
+        message:
+          type: string
+          example: 'Customer not found'
+        code:
+          type: integer
+          example: 0
+        details:
+          type: array
+          example: [ ]
+    OrderNotFoundResponse:
+      type: object
+      description: 'Заказ не найден'
+      properties:
+        message:
+          type: string
+          example: 'Order not found'
+        code:
+          type: integer
+          example: 0
+        details:
+          type: array
+          example: [ ]
+
+    GatewayTimeoutResponse:
+      type: object
+      description: 'gateway timeout'
+      properties:
+        message:
+          type: string
+          example: 'gateway timeout'
+        code:
+          type: integer
+          example: 0
+        details:
+          type: array
+          example: [ ]
+  

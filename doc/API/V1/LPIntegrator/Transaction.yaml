@@ -1,0 +1,138 @@
+openapi: 3.0.3
+info:
+  title: Swagger API.LPIntegrator Transaction
+  version: 1.0.0
+servers:
+  - url: 'https:mindbox.dev.market'
+    description: Test Server
+  - url: 'https:mindbox.dev.market'
+    description: Master Server
+paths:
+  /api/v1/transaction/begin:
+    description: API.LPIntegrator.Begin - Запрос на запуск распределенной транзакции
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Begin'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeginOkResponse'
+        400:
+          description: Заказ не найден
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/OrderNotFoundResponse'
+        500:
+          description: gateway timeout
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/transaction/rollback:
+    description: API.LPIntegrator.Rollback - Запрос на отмену запущенной распределенной транзакции
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rollback'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollbackOkResponse'
+        500:
+          description: gateway timeout
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+components:
+  schemas:
+    Begin:
+      type: object
+      properties:
+        orderNumber:
+          type: string
+          required: true
+          description: Номер заказа
+          example: 12345678910
+        points:
+          type: number
+          required: false
+          description: Количество баллов, введенных для оплаты
+          example: 52.41
+        totalPrice:
+          type: number
+          required: true
+          description: TotalPrice, полученный из Preorder
+          example: 300.25
+        officeUuid:
+          type: string
+          required: true
+          description: UUID Офиса в ЭК5, в котором прошла оплата
+          example: 'f1205516-6dfa-47d8-ace7-cd0ff3dcc908'
+    BeginOkResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+          description: Корректный статус
+          example:
+            beginTransactionStatus: true
+
+    Rollback:
+      type: object
+      properties:
+        orderNumber:
+          type: string
+          required: true
+          description: Номер заказа
+          example: '12345678910'
+    RollbackOkResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+          description: Корректный статус
+          example:
+            rollbackTransactionStatus: true

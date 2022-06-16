@@ -1,0 +1,47 @@
+version: '3.7'
+
+services:
+  minbox-nginx:
+    container_name: nginx-minbox
+    image: nginx:latest
+    restart: always
+    ports:
+      - "${NGINX_PORT}:80"
+    volumes:
+      - ./.docker/hosts:/etc/nginx/conf.d
+      - ./:/var/www
+      - ./.docker/nginx:/var/log/nginx
+    networks:
+      - minbox
+      - docker-network
+
+  minbox-php:
+    build: ./
+    container_name: minbox-php
+    restart: always
+    volumes:
+      - ./:/var/www
+    networks:
+      - minbox
+      - docker-network
+
+  minbox-mariadb:
+    image: mariadb:latest
+    container_name: minbox-mariadb
+    environment:
+      MARIADB_USER: ${DB_USERNAME}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      TZ: ${TZ}
+    volumes:
+      - ./.docker/data/mysql:/var/lib/mysql
+    ports:
+      - "3305:3306"
+    networks:
+      - minbox
+
+networks:
+  minbox:
+  docker-network:
+    external: true
+    name: docker-network

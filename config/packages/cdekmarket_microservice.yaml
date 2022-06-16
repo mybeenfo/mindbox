@@ -1,0 +1,9 @@
+cdekmarket_microservice:
+  logstash:
+    host: '%env(resolve:LOGSTASH_HOST)%'
+    port: '%env(int:resolve:LOGSTASH_PORT)%'
+  hmac:
+    header: '%env(resolve:HMAC_FIELD)%'
+    algo: '%env(resolve:HMAC_ALGO)%'
+    private_key: '%env(resolve:HMAC_KEY)%'
+    live_time: '%env(int:resolve:HMAC_TTL)%'

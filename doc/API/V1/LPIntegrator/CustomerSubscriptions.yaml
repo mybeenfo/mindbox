@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: Swagger API.LPIntegrator Customer subscriptions
+  version: 1.0.0
+servers:
+  - url: 'https:mindbox.dev.market'
+    description: Test Server
+  - url: 'https:mindbox.dev.market'
+    description: Master Server
+paths:
+  /api/v1/customer/subscriptions/get:
+    description: API.LPIntegrator.GetSubscriptions - Состояние подписки на рассылки
+    get:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-USER-ID
+          schema:
+            type: integer
+          required: true
+          example: 11
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      responses:
+        200:
+          description: Состояние подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSubscriptionsOkResponse'
+        400:
+          description: 'Покупатель не найден'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/CustomerNotFoundResponse'
+        500:
+          description: 'gateway timeout'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/customer/subscriptions/update:
+    description: API.LPIntegrator.UpdateSubscriptions - Обновление подписки на рассылки
+    put:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-USER-ID
+          schema:
+            type: integer
+          required: true
+          example: 11
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerSubscriptions'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateCustomerSubscriptionsOkResponse'
+
+
+components:
+  schemas:
+    GetSubscriptionsOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Корректный статус
+          example:
+            status: 'Success'
+        result:
+          type: object
+          required: true
+          description: Результат запроса
+          properties:
+            subscriptions:
+              type: array
+              required: true
+              description: Список подписок на рассылки
+              items:
+                properties:
+                  channel:
+                    type: string
+                    required: false
+                    description: Канал коммуникации с клиентом
+                      SMS
+                      EMAIL
+                      VIBER
+                      PUSH
+                  subscribed:
+                    type: boolean
+                    required: false
+                    description: Признак наличия подписки по каналу
+
+    UpdateCustomerSubscriptions:
+      type: object
+      properties:
+        subscriptions:
+          type: array
+          required: true
+          description: Список подписок на рассылки
+          items:
+            properties:
+              channel:
+                type: string
+                required: false
+                example: 'SMS'
+                description: Канал коммуникации с клиентом
+                  SMS
+                  EMAIL
+                  VIBER
+                  PUSH
+              subscribed:
+                type: boolean
+                required: false
+                description: Признак наличия подписки по каналу
+    UpdateCustomerSubscriptionsOkResponse:
+      type: object
+      properties:
+        updateStatus:
+          type: boolean
+          description: Корректный статус
+          example:
+            updateStatus: true

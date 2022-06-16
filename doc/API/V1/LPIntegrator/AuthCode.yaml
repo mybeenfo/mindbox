@@ -1,0 +1,191 @@
+openapi: 3.0.3
+info:
+  title: Swagger API.LPIntegrator Auth code
+  version: 1.0.0
+servers:
+  - url: 'https:mindbox.dev.market'
+    description: Test Server
+  - url: 'https:mindbox.dev.market'
+    description: Master Server
+paths:
+  /api/v1/auth-code/send:
+    description: API.LPIntegrator.SendAuthCode - Запрос на генерацию кода SMS
+    parameters:
+      - in: header
+        name: X-REQUEST-ID
+        schema:
+          type: integer
+        required: true
+        example: 123456
+      - in: header
+        name: X-SIGNATURE
+        schema:
+          type: string
+        required: true
+        example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+        description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Send'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOkResponse'
+        400:
+          description: Заказ не найден
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/OrderNotFoundResponse'
+        500:
+          description: gateway timeout
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/auth-code/verify:
+    description: API.LPIntegrator.VerifyAuthCode - Запрос на подтверждение кода SMS
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Verify'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyOkResponse'
+        400:
+          description: 'Заказ не найден'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/OrderNotFoundResponse'
+        500:
+          description: 'gateway timeout'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/auth-code/promo-code-activation:
+    description: API.LPIntegrator.PromoCodeActivation - Запрос на активацию промокода
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromoCodeActivation'
+      responses:
+        200:
+          description: Активация промокода OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromoCodeActivationOkResponse'
+        500:
+          description: 'gateway timeout'
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+components:
+  schemas:
+    Send:
+      type: object
+      properties:
+        orderNumber:
+          type: string
+          required: true
+          description: Номер заказа
+          example: 12345678910
+        points:
+          type: number
+          required: true
+          description: Количество баллов, введенных на кассе
+          example: 100.2
+    SendOkResponse:
+      type: object
+      properties:
+        sendAuthCode:
+          type: boolean
+          description: Корректный статус
+          example:
+            sendAuthCode: true
+
+    Verify:
+      type: object
+      properties:
+        orderNumber:
+          type: string
+          required: true
+          description: Номер заказа
+          example: '12345678910'
+        code:
+          type: string
+          required: true
+          description: Введенный код
+          example: 1234
+    VerifyOkResponse:
+      type: object
+      properties:
+        verifyAuthCode:
+          type: boolean
+          description: Корректный статус
+          example:
+            verifyAuthCode: true
+
+    PromoCodeActivation:
+      type: object
+      properties:
+        promoCode:
+          type: string
+          required: true
+          description: Номер промокода	\
+          example: 'oadsfghoiu123'
+    PromoCodeActivationOkResponse:
+      type: object
+      properties:
+        earnedPoints:
+          type: number
+          required: true
+          description: Количество активированных баллов по промо коду
+          example: 123.66

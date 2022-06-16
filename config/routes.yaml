@@ -1,0 +1,3 @@
+cdekmarket_microservice:
+  resource: '@CdekmarketMicroserviceBundle/Controller/'
+  type: annotation

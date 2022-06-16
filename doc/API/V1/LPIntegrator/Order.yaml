@@ -1,0 +1,210 @@
+openapi: 3.0.3
+info:
+  title: Swagger API.LPIntegrator Order
+  version: 1.0.0
+servers:
+  - url: 'https:mindbox.dev.market'
+    description: Test Server
+  - url: 'https:mindbox.dev.market'
+    description: Master Server
+paths:
+  /api/v1/order/precheck:
+    description: API.LPIntegrator.Precheck - Запрос информации о доступной сумме баллов в ПЛ, сколько может быть начислено и списано за уже созданный заказ
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreCheck'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreCheckOkResponse'
+        400:
+          description: Заказ не найден
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/OrderNotFoundResponse'
+        500:
+          description: gateway timeout
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/GatewayTimeoutResponse'
+
+  /api/v1/order/precheck-non-saved:
+    description: API.LPIntegrator.PrecheckNonSaved - Запрос информации о доступной сумме баллов в ПЛ, сколько может быть начислено и списано за еще не сохраненный заказ
+    post:
+      parameters:
+        - in: header
+          name: X-REQUEST-ID
+          schema:
+            type: integer
+          required: true
+          example: 123456
+        - in: header
+          name: X-USER-ID
+          schema:
+            type: integer
+          required: true
+          example: 11
+        - in: header
+          name: X-SIGNATURE
+          schema:
+            type: string
+          required: true
+          example: 02dc1f61eae590ef4873fa8cb955800f:1649249871
+          description: Для теста можно сгенерировать с помощью команды bin/console microservice:hmac:generate-signature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreCheckNonSaved'
+      responses:
+        200:
+          description: Обновление подписки на рассылки OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreCheckNonSavedOkResponse'
+        400:
+          description: Пользователь не найден
+          content:
+            application/json:
+              schema:
+                $ref: 'errorsResponse.yaml/#/components/schemas/CustomerNotFoundResponse'
+
+components:
+  schemas:
+    PreCheck:
+      type: object
+      properties:
+        orderNumber:
+          type: string
+          required: true
+          description: Номер заказа
+          example: 12345678910
+        points:
+          type: number
+          required: false
+          description: Количество баллов, введенных для оплаты (если не указано, то отправится 0.0)
+          example: 52.41
+        officeUuid:
+          type: string
+          required: true
+          description: UUID Офиса в ЭК5, в котором прошла оплата
+          example: f1205516-6dfa-47d8-ace7-cd0ff3dcc908
+    PreCheckOkResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Корректный статус
+          example:
+            status: 'Success'
+        result:
+          type: object
+          required: true
+          properties:
+            availableTotalBalancePoints:
+              type: number
+              required: true
+              description: Общее количество баллов, доступное в программе лояльности
+              example: 210.00
+            availableForCurrentOrderPoints:
+              type: number
+              required: true
+              description: Сумма баллов, доступная для оплаты данного заказа
+              example: 100.00
+            willBeEarnedPoints:
+              type: number
+              required: true
+              description: Количество баллов, которое может быть накоплено за заказ
+              example: 56.23
+            totalPrice:
+              type: number
+              required: true
+              description: Итоговая цена
+              example: 234.56
+
+    PreCheckNonSaved:
+      type: object
+      properties:
+        creatingInterfaceCode:
+          type: string
+          required: true
+          description: Код интерфейса с которого создали заказ (web /mobile).
+          example: "web"
+        order:
+          type: object
+          properties:
+            commonCurrencyCode:
+              type: string
+              required: true,
+              description: Валюта взаиморасчетов
+              example: "RUB"
+            senderCityCode:
+              type: string
+              required: true
+              description: Город отправителя
+              example: "44"
+            receiverCityCode:
+              type: string
+              required: true
+              description: Город получателя
+              example: "44"
+            paymentMethodCode:
+              type: string
+              required: true
+              description: Форма оплаты
+              example: "online"
+            deliveryPriceCost:
+              type: number
+              required: true
+              description: Цена услуги доставки
+              example: 139.60
+            discountsCost:
+              type: number
+              required: true
+              description: Сумма скидки
+              example: 100.00
+    PreCheckNonSavedOkResponse:
+      type: object
+      properties:
+        availableTotalBalancePoints:
+          type: number
+          required: true
+          description: Общее количество баллов, доступное в программе лояльности
+          example: 210.00
+        availableForCurrentOrderPoints:
+          type: number
+          required: true
+          description: Сумма баллов, доступная для оплаты данного заказа
+          example: 100.00
+        willBeEarnedPoints:
+          type: number
+          required: true
+          description: Количество баллов, которое может быть накоплено за заказ
+        totalPrice:
+          type: number
+          required: true
+          description: Итоговая цена
+          example: 234.56

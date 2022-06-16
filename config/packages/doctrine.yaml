@@ -1,0 +1,64 @@
+doctrine:
+    dbal:
+        default_connection: mindbox_service
+        connections:
+            mindbox_service:
+                dbname: '%env(resolve:DB_DATABASE)%'
+                host: '%env(resolve:DB_HOST)%'
+                port: '%env(resolve:DB_PORT)%'
+                user: '%env(resolve:DB_USERNAME)%'
+                password: '%env(resolve:DB_PASSWORD)%'
+                driver: pdo_mysql
+            monolith:
+                dbname: '%env(resolve:DB_DATABASE_CSCART)%'
+                host: '%env(resolve:DB_HOST_CSCART)%'
+                port: '%env(resolve:DB_PORT_CSCART)%'
+                user: '%env(resolve:DB_USERNAME_CSCART)%'
+                password: '%env(resolve:DB_PASSWORD_CSCART)%'
+                driver: pdo_mysql
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: mindbox_service
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                auto_mapping: true
+                mappings:
+                    App:
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity/Mindbox'
+                        prefix: 'App\Entity\Mindbox'
+                        alias: App
+            monolith:
+                connection: monolith
+                naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+                mappings:
+                    App:
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity/Monolith'
+                        prefix: 'App\Entity\Monolith'
+                        alias: ProductsService
+when@test:
+    doctrine:
+        dbal:
+            # "TEST_TOKEN" is typically set by ParaTest
+            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            auto_generate_proxy_classes: false
+            query_cache_driver:
+                type: pool
+                pool: doctrine.system_cache_pool
+            result_cache_driver:
+                type: pool
+                pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system
